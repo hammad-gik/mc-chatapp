@@ -14,10 +14,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.example.chatapp.models.ChatDialog;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.dialogs.DialogsList;
@@ -81,16 +85,27 @@ public class ChatListFragment extends Fragment {
             }
         });
 
-        /*
-        ChatDialog chatDialog = new ChatDialog();
-        chatDialog.id = "123";
-        chatDialog.dialogPhoto = "";
-        chatDialog.dialogName = "first chat";
-        chatDialog.unreadCount = 0;
-
-        dialogsListAdapter.addItem(chatDialog);*/
+        getChatsList();
 
         return view;
+    }
+
+    private void getChatsList() {
+
+        firestore.collection("chats")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d("Chat List", document.getId() + " => " + document.getData());
+                            }
+                        } else {
+                            Log.d("Chat List", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
     }
 
     private void startChat(String firstMessage) {
